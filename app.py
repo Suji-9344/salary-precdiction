@@ -1,28 +1,43 @@
 import streamlit as st
-import pickle
+import pandas as pd
 import numpy as np
+from sklearn.linear_model import LinearRegression
 import os
 
 st.title("Salary Prediction App")
 st.write("Predict salary based on Years of Experience")
 
-MODEL_FILE = "salary_data.pkl"
+# =========================
+# Load dataset from GitHub repo
+# =========================
+DATA_FILE = "Salary_Data.csv"
 
-# Check model file
-if not os.path.exists(MODEL_FILE):
-    st.error("❌ salary_data.pkl not found")
+if not os.path.exists(DATA_FILE):
+    st.error("❌ Salary_Data.csv not found in repository")
+    st.info("👉 Upload Salary_Data.csv to the SAME folder as app.py")
     st.stop()
 
-# Load trained model
-with open(MODEL_FILE, "rb") as f:
-    model = pickle.load(f)
+# Read dataset
+data = pd.read_csv(DATA_FILE)
 
-# Validate model
-if not hasattr(model, "predict"):
-    st.error("❌ Loaded file is not a trained ML model")
+# Validate required columns
+required_columns = ["YearsExperience", "Salary"]
+if not all(col in data.columns for col in required_columns):
+    st.error("❌ Dataset must contain 'YearsExperience' and 'Salary' columns")
     st.stop()
 
+# =========================
+# Train model
+# =========================
+X = data[["YearsExperience"]]
+y = data["Salary"]
+
+model = LinearRegression()
+model.fit(X, y)
+
+# =========================
 # User input
+# =========================
 experience = st.number_input(
     "Enter Years of Experience",
     min_value=0.0,
@@ -30,10 +45,9 @@ experience = st.number_input(
     step=0.1
 )
 
-# Predict
+# =========================
+# Prediction
+# =========================
 if st.button("Predict Salary"):
-    try:
-        prediction = model.predict(np.array([[experience]]))[0]
-        st.success(f"💰 Predicted Salary: ₹{prediction:,.2f}")
-    except Exception as e:
-        st.error(f"❌ Prediction error: {e}")
+    prediction = model.predict(np.array([[experience]]))[0]
+    st.success(f"💰 Predicted Salary: ₹{prediction:,.2f}")
