@@ -2,52 +2,43 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
-import os
 
-st.title("Salary Prediction App")
-st.write("Predict salary based on Years of Experience")
+# ---------------------------
+# Create Salary Dataset
+# ---------------------------
+data = {
+    "YearsExperience": [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10],
+    "Salary": [30000, 35000, 38000, 40000, 45000, 50000,
+               60000, 70000, 80000, 90000, 100000, 110000, 120000]
+}
 
-# =========================
-# Load dataset from GitHub repo
-# =========================
-DATA_FILE = "Salary_Data.csv"
+df = pd.DataFrame(data)
 
-if not os.path.exists(DATA_FILE):
-    st.error("❌ Salary_Data.csv not found in repository")
-    st.info("👉 Upload Salary_Data.csv to the SAME folder as app.py")
-    st.stop()
-
-# Read dataset
-data = pd.read_csv(DATA_FILE)
-
-# Validate required columns
-required_columns = ["YearsExperience", "Salary"]
-if not all(col in data.columns for col in required_columns):
-    st.error("❌ Dataset must contain 'YearsExperience' and 'Salary' columns")
-    st.stop()
-
-# =========================
-# Train model
-# =========================
-X = data[["YearsExperience"]]
-y = data["Salary"]
+# ---------------------------
+# Train Salary Model
+# ---------------------------
+X = df[["YearsExperience"]]   # Feature
+y = df["Salary"]              # Target
 
 model = LinearRegression()
 model.fit(X, y)
 
-# =========================
-# User input
-# =========================
+# ---------------------------
+# Streamlit UI
+# ---------------------------
+st.title("💼 Salary Prediction App")
+st.write("Predict salary based on years of experience")
+
 experience = st.number_input(
-    "Enter Years of Experience",
+    "Years of Experience",
     min_value=0.0,
     max_value=50.0,
-    step=0.1
+    value=2.0,
+    step=0.5
 )
 
-# =========================
-# Prediction
-# =========================
 if st.button("Predict Salary"):
-    prediction = model.predict(np.array([[experience]]))[0]
-    st.success(f"💰 Predicted Salary: ₹{prediction:,.2f}")
+    input_data = np.array([[experience]])
+    prediction = model.predict(input_data)
+    st.success(f"💰 Predicted Salary: ₹{prediction[0]:,.2f}")
+
