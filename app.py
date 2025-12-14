@@ -1,30 +1,20 @@
-import streamlit as st
+import pandas as pd
+from sklearn.linear_model import LinearRegression
 import pickle
-import numpy as np
-import os
 
-st.title("Salary Prediction App")
+# Load dataset
+data = pd.read_csv("Salary_Data.csv")
 
-MODEL_FILE = "salary_data.pkl"
+# Features and target
+X = data[["YearsExperience"]]
+y = data["Salary"]
 
-if not os.path.exists(MODEL_FILE):
-    st.error("❌ salary_data.pkl NOT FOUND")
-    st.info("👉 Put salary_data.pkl in the SAME folder as app.py")
-    st.stop()
+# Train model
+model = LinearRegression()
+model.fit(X, y)
 
-try:
-    with open(MODEL_FILE, "rb") as f:
-        model = pickle.load(f)
-except Exception as e:
-    st.error(f"❌ Model loading failed: {e}")
-    st.stop()
+# Save TRAINED MODEL (important!)
+with open("salary_data.pkl", "wb") as f:
+    pickle.dump(model, f)
 
-years = st.number_input("Years of Experience", 0.0, 50.0, step=0.1)
-
-if st.button("Predict Salary"):
-    try:
-        prediction = model.predict([[years]])[0]
-        st.success(f"💰 Predicted Salary: ₹{prediction:,.2f}")
-    except Exception as e:
-        st.error(f"❌ Prediction error: {e}")
-
+print("✅ Trained model saved as salary_data.pkl")
